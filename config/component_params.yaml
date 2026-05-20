@@ -1,0 +1,5 @@
+ingestion:
+  train_identity_file: '/data/raw/unzipped/train_identity.csv'
+  test_identity_file: '/data/raw/unzipped/test_identity.csv'
+  train_transaction_file: '/data/raw/unzipped/train_transaction.csv'
+  test_transaction_file: '/data/raw/unzipped/test_transaction.csv'
