@@ -1,3 +1,4 @@
+# Ingestion Input Config
 from src.utils import load_yaml
 from src.configs.paths import COMPONENT_PARAM_FILE_PATH, PROJ_ROOT
 from box import Box

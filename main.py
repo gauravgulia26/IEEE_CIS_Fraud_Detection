@@ -1,7 +1,7 @@
-from src.components.ingestion import IngestData
-from src.custom_exception import CustomException
-from src.configs.manager import ConfigurationManager
-from src.entity.manager import ArtifactsManager
+from components.data_ingestion import IngestData
+from src.core.exception import CustomException
+from configs.managers import ConfigurationManager
+from entity.artifacts import DataIngestionArtifact
 from rich import print
 import sys
 

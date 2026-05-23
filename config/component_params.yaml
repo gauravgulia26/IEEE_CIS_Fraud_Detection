@@ -1,5 +1,6 @@
 ingestion:
-  train_identity_file: '/data/raw/unzipped/train_identity.csv'
-  test_identity_file: '/data/raw/unzipped/test_identity.csv'
-  train_transaction_file: '/data/raw/unzipped/train_transaction.csv'
-  test_transaction_file: '/data/raw/unzipped/test_transaction.csv'
+  train_identity_file: 'data/interim/unzipped/train_identity.csv'
+  test_identity_file: 'data/interim/unzipped/test_identity.csv'
+  train_transaction_file: 'data/interim/unzipped/train_transaction.csv'
+  test_transaction_file: 'data/interim/unzipped/test_transaction.csv'
+  merged_file_name: 'Merged_Data.csv'

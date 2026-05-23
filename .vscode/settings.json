@@ -1,4 +1,4 @@
-{"python.defaultInterpreterPath": "/home/skynet/miniconda3/envs/ieee_fraud/bin/python",
+{"python.defaultInterpreterPath": "/home/gaurav/anaconda3/envs/ieee_fraud/bin/python",
 
 "python.analysis.extraPaths": [
         "./",
@@ -18,7 +18,9 @@
     },
     "editor.codeActionsOnSave": {
     "source.organizeImports": "explicit"    
-    }
+    },
+    "python-envs.defaultEnvManager": "ms-python.python:conda",
+    "python-envs.defaultPackageManager": "ms-python.python:conda"
 
 
 }
