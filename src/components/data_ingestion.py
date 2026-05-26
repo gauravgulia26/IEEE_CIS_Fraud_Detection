@@ -1,8 +1,8 @@
-from core.logging import get_logger
-from core.exception import CustomException
+from src.core.logging import get_logger
+from src.core.exception import CustomException
 from src.entity.artifacts import DataIngestionArtifact
 from src.entity.internal import InterReadArtifact
-from configs.managers.manager import ConfigurationManager
+from src.configs.managers.manager import ConfigurationManager
 from src.utils import load_yaml
 from src.configs.paths import (
     INGESTION_LOG_DIR_PATH,
@@ -15,6 +15,8 @@ from pathlib import Path
 import pandas as pd
 import sys
 from typing import Dict
+from tqdm import tqdm
+from concurrent.futures import ThreadPoolExecutor
 
 
 class IngestData:
@@ -57,27 +59,89 @@ class IngestData:
         else:
             raise FileNotFoundError(f"{', '.join(invalid_paths)} is not a valid Path")
 
-    def __validate_schema(self):
-        pass
+    def _read_csv_with_progress(
+        self,
+        path,
+        chunk_size: int = 100000,
+    ) -> pd.DataFrame:
+
+        self.logger.info(f"Reading File: {path.name}")
+
+        total_rows = sum(1 for _ in open(path, "r")) - 1
+
+        chunks = []
+
+        with tqdm(
+            total=total_rows,
+            desc=f"Loading {path.name}",
+        ) as pbar:
+
+            for chunk in pd.read_csv(
+                path,
+                engine="c",
+                chunksize=chunk_size,
+                low_memory=False,
+            ):
+
+                chunks.append(chunk)
+
+                pbar.update(len(chunk))
+
+        df = pd.concat(chunks, ignore_index=True)
+
+        self.logger.info(f"{path.name} Loaded Successfully")
+
+        return df
 
     def __read_files(self) -> InterReadArtifact:
+
         try:
-            self.logger.info("Reading Files..")
-            train_identity = pd.read_csv(self.configs.train_identity_file_path)
-            train_transaction = pd.read_csv(self.configs.train_transaction_file_path)
 
-            merged_df = pd.merge(train_identity, train_transaction, on="TransactionID", how="left")
+            self.logger.info("Started Reading Files")
+
+            with ThreadPoolExecutor() as executor:
+
+                future_identity = executor.submit(
+                    self._read_csv_with_progress,
+                    self.configs.train_identity_file_path,
+                )
+
+                future_transaction = executor.submit(
+                    self._read_csv_with_progress,
+                    self.configs.train_transaction_file_path,
+                )
+
+                train_identity = future_identity.result()
+
+                train_transaction = future_transaction.result()
+
+            self.logger.info("Merging Datasets")
+
+            merged_df = pd.merge(
+                train_transaction,
+                train_identity,
+                on="TransactionID",
+                how="left",
+            )
+
+            self.logger.info("Datasets Merged Successfully")
+
+            obj = InterReadArtifact(
+                train_identity_df=train_identity,
+                train_transaction_df=train_transaction,
+                merged_final_df=merged_df,
+            )
+
+            return obj
+
         except Exception as e:
-            err = CustomException(error=e, error_detail=sys)
-            self.logger.exception(f"Error Occured: {e}")
-            raise err
 
-        obj = InterReadArtifact(
-            train_identity_df=train_identity,
-            train_transaction_df=train_transaction,
-            merged_final_df=merged_df,
-        )
-        return obj
+            self.logger.exception(f"Error Occurred While Reading Files: {e}")
+
+            raise CustomException(
+                error=e,
+                error_detail=sys,
+            )
 
     def __save_files(self, artifact_object: InterReadArtifact) -> None:
         df_files = artifact_object
@@ -86,8 +150,10 @@ class IngestData:
                 PROJ_ROOT,
                 self.yaml_configs["merged_file_name"],
             )
+            self.logger.info(f"Creating Directory: {file_save_path.parents[0]}")
+            file_save_path.parents[0].mkdir(parents=True, exist_ok=True)
 
-            df_files.merged_final_df.to_csv(file_save_path, index=False)
+            df_files.merged_final_df.to_parquet(file_save_path, index=False, engine="pyarrow")
             self.logger.info(f"Merged File Saved to: {file_save_path}")
             self.logger.info("Data Ingestion Completed !!")
         except Exception as e:
@@ -103,9 +169,9 @@ class IngestData:
         self.__save_files(artifact_object=artifact_object)
 
         return DataIngestionArtifact(
-            ident_train_data_path=self.yaml_configs["train_identity_file"],
-            ident_test_data_path=self.yaml_configs["test_identity_file"],
-            trns_train_data_path=self.yaml_configs["train_transaction_file"],
-            trns_test_data_path=self.yaml_configs["test_transaction_file"],
-            merged_file_path=self.yaml_configs["merged_file_name"],
+            ident_train_data_path=PROJ_ROOT / self.yaml_configs["train_identity_file"],
+            ident_test_data_path=PROJ_ROOT / self.yaml_configs["test_identity_file"],
+            trns_train_data_path=PROJ_ROOT / self.yaml_configs["train_transaction_file"],
+            trns_test_data_path=PROJ_ROOT / self.yaml_configs["test_transaction_file"],
+            merged_file_path=PROJ_ROOT / self.yaml_configs["merged_file_name"],
         )

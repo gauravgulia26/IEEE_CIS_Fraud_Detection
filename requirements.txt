@@ -20,4 +20,6 @@ kagglehub
 dvc
 mlflow
 python-box
+pyarrow
+coloroma
 -e .

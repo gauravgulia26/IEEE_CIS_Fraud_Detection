@@ -3,7 +3,8 @@ import os
 from tqdm import tqdm
 import yaml
 from pathlib import Path
-from typing import Dict
+from typing import Optional, Dict
+import pandas as pd
 
 
 def unzip_util(zip_path: str, extract_dir: str):
@@ -62,3 +63,85 @@ def load_yaml_key(file_path: str, key: str) -> Dict:
         raise KeyError(f"Key '{key}' not found in YAML")
 
     return data[key]
+
+
+def fast_read_csv(
+    file_path: str | Path,
+    chunk_size: int = 100000,
+    usecols: Optional[list[str]] = None,
+    dtype: Optional[dict] = None,
+    show_progress: bool = True,
+    low_memory: bool = False,
+) -> pd.DataFrame:
+    """
+    Efficient CSV reader with:
+    - chunk loading
+    - progress bar
+    - lower memory usage
+    - reusable architecture
+
+    Parameters
+    ----------
+    file_path : str | Path
+        CSV file path
+
+    chunk_size : int
+        Number of rows per chunk
+
+    usecols : list[str]
+        Specific columns to load
+
+    dtype : dict
+        Explicit dtype mapping
+
+    show_progress : bool
+        Whether to show tqdm progress bar
+
+    low_memory : bool
+        Pandas low_memory option
+
+    Returns
+    -------
+    pd.DataFrame
+    """
+
+    file_path = Path(file_path)
+
+    total_rows = sum(1 for _ in open(file_path, "r")) - 1
+
+    chunks = []
+
+    reader = pd.read_csv(
+        file_path,
+        chunksize=chunk_size,
+        engine="c",
+        usecols=usecols,
+        dtype=dtype,
+        low_memory=low_memory,
+    )
+
+    if show_progress:
+
+        with tqdm(
+            total=total_rows,
+            desc=f"Loading {file_path.name}",
+        ) as pbar:
+
+            for chunk in reader:
+
+                chunks.append(chunk)
+
+                pbar.update(len(chunk))
+
+    else:
+
+        for chunk in reader:
+
+            chunks.append(chunk)
+
+    df = pd.concat(
+        chunks,
+        ignore_index=True,
+    )
+
+    return df

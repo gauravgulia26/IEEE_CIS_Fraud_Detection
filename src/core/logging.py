@@ -1,34 +1,78 @@
 import logging
-import os
+
 from datetime import datetime
 from pathlib import Path
+from src.configs.paths import PROJ_ROOT
+
+from colorama import Fore, Style, init
+
+# Initialize colorama
+init(autoreset=True)
 
 
-def get_logger(name: str, log_dir_path: Path) -> logging.Logger:
+class ColoredFormatter(logging.Formatter):
+
+    COLORS = {
+        logging.DEBUG: Fore.CYAN,
+        logging.INFO: Fore.GREEN,
+        logging.WARNING: Fore.YELLOW,
+        logging.ERROR: Fore.RED,
+        logging.CRITICAL: Fore.MAGENTA + Style.BRIGHT,
+    }
+
+    def format(self, record):
+
+        log_color = self.COLORS.get(record.levelno, Fore.WHITE)
+
+        formatted_message = super().format(record)
+
+        return f"{log_color}{formatted_message}{Style.RESET_ALL}"
+
+
+def get_logger(
+    name: str,
+    log_dir_path: Path,
+) -> logging.Logger:
     """
-    Create and return a configured logger
+    Create and return configured logger
+    with colored console output
     """
+
     logger = logging.getLogger(name)
+
     logger.setLevel(logging.INFO)
-    LOG_DIR = log_dir_path
-    os.makedirs(LOG_DIR, exist_ok=True)
 
-    # Log file name with timestamp
-    LOG_FILE = f"{datetime.now().strftime('%m_%d_%Y_%H_%M_%S')}.log"
-    LOG_PATH = os.path.join(LOG_DIR, LOG_FILE)
+    logger.propagate = False
+    log_dir_path_full = PROJ_ROOT / log_dir_path
+    log_dir_path_full.mkdir(
+        parents=True,
+        exist_ok=True,
+    )
 
-    # Avoid duplicate handlers
+    log_file = f"{datetime.now().strftime('%m_%d_%Y_%H_%M_%S')}.log"
+
+    log_path = log_dir_path_full / log_file
+
     if not logger.handlers:
-        file_handler = logging.FileHandler(LOG_PATH)
+
+        # Console Handler
         console_handler = logging.StreamHandler()
 
-        # Formatter
-        formatter = logging.Formatter("%(asctime)s | %(levelname)s | %(name)s | %(message)s")
+        console_formatter = ColoredFormatter(
+            "%(asctime)s | %(levelname)s | %(name)s | %(message)s"
+        )
 
-        file_handler.setFormatter(formatter)
-        console_handler.setFormatter(formatter)
+        console_handler.setFormatter(console_formatter)
+
+        # File Handler
+        file_handler = logging.FileHandler(log_path)
+
+        file_formatter = logging.Formatter("%(asctime)s | %(levelname)s | %(name)s | %(message)s")
+
+        file_handler.setFormatter(file_formatter)
+
+        logger.addHandler(console_handler)
 
         logger.addHandler(file_handler)
-        logger.addHandler(console_handler)
 
     return logger

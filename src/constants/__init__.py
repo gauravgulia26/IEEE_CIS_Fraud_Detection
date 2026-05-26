@@ -28,6 +28,7 @@ TEST_IDENTITY_FILE = "test_identity.csv"
 # Components
 
 INGESTION_COMP = "ingestion"
+VALIDATION_COMP = "validation"
 
 # YAML CONFIG
 

@@ -3,4 +3,4 @@ ingestion:
   test_identity_file: 'data/interim/unzipped/test_identity.csv'
   train_transaction_file: 'data/interim/unzipped/train_transaction.csv'
   test_transaction_file: 'data/interim/unzipped/test_transaction.csv'
-  merged_file_name: 'data/processed/merged_data/Merged_Data.csv'
+  merged_file_name: 'data/processed/merged_data/Merged_Data.parquet'
