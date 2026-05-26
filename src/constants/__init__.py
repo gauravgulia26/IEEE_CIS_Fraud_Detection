@@ -33,3 +33,4 @@ INGESTION_COMP = "ingestion"
 
 YAML_DIR = "config"
 COMPONENT_PARAM_FILE_NAME = "component_params.yaml"
+SCHEMA_PARAM_FILE_NAME = "schema.yaml"

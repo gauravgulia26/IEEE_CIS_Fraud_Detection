@@ -9,3 +9,4 @@ class DataIngestionArtifact(NamedTuple):
     ident_test_data_path: Path
     trns_train_data_path: Path
     trns_test_data_path: Path
+    merged_file_path: Path

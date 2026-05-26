@@ -3,6 +3,7 @@ import os
 from tqdm import tqdm
 import yaml
 from pathlib import Path
+from typing import Dict
 
 
 def unzip_util(zip_path: str, extract_dir: str):
@@ -30,7 +31,7 @@ def unzip_util(zip_path: str, extract_dir: str):
     print(f"Extraction completed at: {extract_dir}")
 
 
-def load_yaml_key(file_path: str, key: str):
+def load_yaml_key(file_path: str, key: str) -> Dict:
     """
     Load a YAML file and return the value for a specific key.
 
