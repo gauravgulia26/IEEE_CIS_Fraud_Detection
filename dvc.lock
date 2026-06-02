@@ -1,0 +1,58 @@
+schema: '2.0'
+stages:
+  data_ingestion:
+    cmd: python src/pipeline/stage_01_ingestion.py
+    deps:
+    - path: src/components/data_ingestion.py
+      hash: md5
+      md5: f4941077a293490fabda43e5d5d854c5
+      size: 6583
+      isexec: true
+    params:
+      config/component_params.yaml:
+        ingestion:
+          train_identity_file: data/raw/unzipped/train_identity.csv
+          test_identity_file: data/raw/unzipped/test_identity.csv
+          train_transaction_file: data/raw/unzipped/train_transaction.csv
+          test_transaction_file: data/raw/unzipped/test_transaction.csv
+          merged_file_name: data/processed/merged_data/Merged_Data.parquet
+    outs:
+    - path: artifacts/data_ingestion/data_ingestion.json
+      hash: md5
+      md5: 30e703c1ac0240ea44244c33af878800
+      size: 727
+      isexec: true
+    - path: data/processed/merged_data/Merged_Data.parquet
+      hash: md5
+      md5: a00d2f7ff0eb33852a9bc4958e34e89a
+      size: 84718682
+      isexec: true
+  data_validation:
+    cmd: python src/pipeline/stage_02_validation.py
+    deps:
+    - path: artifacts/data_ingestion/data_ingestion.json
+      hash: md5
+      md5: 30e703c1ac0240ea44244c33af878800
+      size: 727
+      isexec: true
+    - path: config/schema.yaml
+      hash: md5
+      md5: 68e76ce39a5b7b254d9bf2c92aabf809
+      size: 299
+      isexec: true
+    - path: src/components/data_validation.py
+      hash: md5
+      md5: 8991aef468fe56cd6caece7f71e23782
+      size: 4243
+      isexec: true
+    outs:
+    - path: artifacts/data_validation/data_validation.json
+      hash: md5
+      md5: 5d4cd0934677716f08707d614114dfdd
+      size: 7527
+      isexec: true
+    - path: reports/validation/validation_report_latest.json
+      hash: md5
+      md5: f34395585ae72a28ed36be4d697fec62
+      size: 278
+      isexec: true
