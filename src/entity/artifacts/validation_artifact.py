@@ -1,31 +1,32 @@
-from typing import NamedTuple, Any
+from pydantic import BaseModel
+from typing import List, Dict, Any, Optional
 from pathlib import Path
 
 
-class ValidationArtifact(NamedTuple):
+class ValidationArtifact(BaseModel):
 
-    validation_status: bool
+    validation_status: Optional[bool] = None
 
-    validated_file_path: Path
+    validated_file_path: Optional[Path] = None
 
-    total_rows: int
+    total_rows: Optional[int] = None
 
-    total_columns: int
+    total_columns: Optional[int] = None
 
-    missing_columns: list[str]
+    missing_columns: Optional[List[str]] = None
 
-    dtype_errors: list[dict[str, Any]]
+    dtype_errors: Optional[Dict[str, Any]] = None
 
-    null_threshold_errors: list[dict[str, Any]]
+    null_threshold_errors: Optional[List[Dict[str, Any]]] = None
 
-    allowed_value_errors: list[dict[str, Any]]
+    allowed_value_errors: Optional[List[Dict[str, Any]]] = None
 
-    uniqueness_errors: list[dict[str, Any]]
+    uniqueness_errors: Optional[List[Dict[str, Any]]] = None
 
-    range_errors: list[str]
+    range_errors: Optional[List[str]] = None
 
-    validated_columns: list[str]
+    validated_columns: Optional[List[str]] = None
 
-    schema_version: str
+    schema_version: Optional[str] = None
 
-    validation_message: str
+    validation_message: Optional[str] = None

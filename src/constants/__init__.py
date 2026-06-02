@@ -35,3 +35,11 @@ VALIDATION_COMP = "validation"
 YAML_DIR = "config"
 COMPONENT_PARAM_FILE_NAME = "component_params.yaml"
 SCHEMA_PARAM_FILE_NAME = "schema.yaml"
+
+# Artifacts Constants
+
+ARTIFACTS_DIR = "artifacts"
+INGESTION_ARTIFACT_DIR = "data_ingestion"
+VALIDATION_ARTIFACT_DIR = "data_validation"
+INGESTION_ARTIFACT_NAME = f"{INGESTION_ARTIFACT_DIR}.json"
+VALIDATION_ARTIFACT_NAME = f"{VALIDATION_ARTIFACT_DIR}.json"

@@ -3,8 +3,10 @@ import os
 from tqdm import tqdm
 import yaml
 from pathlib import Path
-from typing import Optional, Dict
+from typing import Optional, Dict, Type
 import pandas as pd
+from pydantic import BaseModel
+from box import Box
 
 
 def unzip_util(zip_path: str, extract_dir: str):
@@ -145,3 +147,29 @@ def fast_read_csv(
     )
 
     return df
+
+
+def save_artifact(artifact: BaseModel, file_path: Path) -> None:
+    """
+    Save Pydantic artifact to JSON file.
+
+    Args:
+        artifact: Pydantic BaseModel instance
+        file_path: Path to save JSON
+    """
+    file_path.parent.mkdir(parents=True, exist_ok=True)
+
+    file_path.write_text(artifact.model_dump_json(indent=4))
+
+
+def load_artifact(file_path: Path) -> Box:
+    """
+    Load JSON artifact as ConfigBox-like object (dot notation).
+
+    Args:
+        file_path: Path to artifact JSON
+
+    Returns:
+        Box object (dot-access dictionary)
+    """
+    return Box.from_json(filename=str(file_path))

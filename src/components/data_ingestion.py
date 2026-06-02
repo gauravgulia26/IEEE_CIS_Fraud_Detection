@@ -3,13 +3,13 @@ from src.core.exception import CustomException
 from src.entity.artifacts import DataIngestionArtifact
 from src.entity.internal import InterReadArtifact
 from src.configs.managers.manager import ConfigurationManager
-from src.utils import load_yaml
+from src.utils import load_yaml, load_artifact_json, save_artifact_json
 from src.configs.paths import (
     INGESTION_LOG_DIR_PATH,
     PROJ_ROOT,
     INGESTION_COMP,
     COMPONENT_PARAM_FILE_PATH,
-    SCHEMA_PARAM_FILE_PATH,
+    INGESTION_ARTIFACT_DIR_PATH,
 )
 from pathlib import Path
 import pandas as pd
@@ -124,7 +124,20 @@ class IngestData:
                 how="left",
             )
 
-            self.logger.info("Datasets Merged Successfully")
+            merged_df["TransactionID"] = pd.to_numeric(
+                merged_df["TransactionID"], errors="coerce"
+            ).astype("int64")
+            merged_df["isFraud"] = pd.to_numeric(merged_df["isFraud"], errors="coerce").astype(
+                "int8"
+            )
+            merged_df["TransactionDT"] = pd.to_numeric(
+                merged_df["TransactionDT"], errors="coerce"
+            ).astype("int64")
+            merged_df["TransactionAmt"] = pd.to_numeric(
+                merged_df["TransactionAmt"], errors="coerce"
+            ).astype("float32")
+
+            self.logger.info("Dtypes Changed Successfully !!")
 
             obj = InterReadArtifact(
                 train_identity_df=train_identity,
@@ -168,10 +181,14 @@ class IngestData:
         artifact_object = self.__read_files()
         self.__save_files(artifact_object=artifact_object)
 
-        return DataIngestionArtifact(
+        obj = DataIngestionArtifact(
             ident_train_data_path=PROJ_ROOT / self.yaml_configs["train_identity_file"],
             ident_test_data_path=PROJ_ROOT / self.yaml_configs["test_identity_file"],
             trns_train_data_path=PROJ_ROOT / self.yaml_configs["train_transaction_file"],
             trns_test_data_path=PROJ_ROOT / self.yaml_configs["test_transaction_file"],
             merged_file_path=PROJ_ROOT / self.yaml_configs["merged_file_name"],
         )
+
+        save_artifact_json(artifact=obj, file_path=INGESTION_ARTIFACT_DIR_PATH)
+        self.logger.info("JSON Artifact Saved")
+        return obj

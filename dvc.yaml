@@ -1,0 +1,21 @@
+stages:
+  data_ingestion:
+    cmd: python src/pipeline/stage_01_ingestion.py
+    deps:
+      - src/components/data_ingestion.py
+    params:
+      - config/component_params.yaml:
+          - ingestion
+    outs:
+      - artifacts/data_ingestion/data_ingestion.json
+      - data/processed/merged_data/Merged_Data.parquet
+  data_validation:
+   cmd: python src/pipeline/stage_02_validation.py
+   deps:
+    - src/components/data_validation.py
+    - artifacts/data_ingestion/data_ingestion.json
+    - config/schema.yaml
+   outs:
+     - reports/validation/validation_report_latest.json
+     - artifacts/data_validation/data_validation.json
+   

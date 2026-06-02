@@ -43,7 +43,7 @@ class SchemaValidator:
 
         self.logger.info(f"Reading Dataframe: {self.df_path.name}")
 
-        return pd.read_parquet(self.df_path, low_memory=False, engine="pyarrow")
+        return pd.read_parquet(self.df_path, engine="pyarrow")
 
     def __validate_foreign_key(
         self,
